@@ -95,8 +95,6 @@ static bool	config_load		= false;
 static uint8_t 	vk_press = 0x00;
 static uint8_t 	AA_press = 0x00;
 static uint8_t	IC_STATUS_CHECK	= 0xAA;
-static uint8_t 	EN_NoiseFilter = 0x00;
-static uint8_t	Last_EN_NoiseFilter = 0x00;
 static int	hx_point_num	= 0;																	
 static int	p_point_num	= 0xFFFF;
 static int	tpd_key	   	= 0x00;
@@ -5898,9 +5896,6 @@ inline void himax_ts_work(struct himax_ts_data *ts)
 	
 
 bypass_checksum_failed_packet:
-		EN_NoiseFilter = (buf[HX_TOUCH_INFO_POINT_CNT+2]>>3);
-
-		EN_NoiseFilter = EN_NoiseFilter & 0x01;
 
 	#if defined(HX_EN_SEL_BUTTON) || defined(HX_EN_MUT_BUTTON)
 		tpd_key = (buf[HX_TOUCH_INFO_POINT_CNT+2]>>4);
@@ -5949,14 +5944,14 @@ bypass_checksum_failed_packet:
 								{
 									if (ts->useScreenRes)
 									{
-										I("status:%X, Screen:F:%02d Down, X:%d, Y:%d, W:%d, N:%d\n",
+										I("status:%X, Screen:F:%02d Down, X:%d, Y:%d, W:%d\n",
 										finger_pressed, loop_i+1, x * ts->widthFactor >> SHIFTBITS,
-										y * ts->heightFactor >> SHIFTBITS, w, EN_NoiseFilter);
+										y * ts->heightFactor >> SHIFTBITS, w);
 									}
 									else
 									{
-										I("status:%X, Raw:F:%02d Down, X:%d, Y:%d, W:%d, N:%d\n",
-										finger_pressed, loop_i+1, x, y, w, EN_NoiseFilter);
+										I("status:%X, Raw:F:%02d Down, X:%d, Y:%d, W:%d\n",
+										finger_pressed, loop_i+1, x, y, w);
 									}
 								}
 							}
@@ -5998,8 +5993,8 @@ bypass_checksum_failed_packet:
 
 
 							if (ts->debug_log_level & BIT(1))
-								I("Finger %d=> X:%d, Y:%d W:%d, Z:%d, F:%d, N:%d\n",
-									loop_i + 1, x, y, w, w, loop_i + 1, EN_NoiseFilter);
+								I("Finger %d=> X:%d, Y:%d W:%d, Z:%d, F:%d\n",
+									loop_i + 1, x, y, w, w, loop_i + 1);
 
 						} else {
 							if (ts->protocol_type == PROTOCOL_TYPE_B)
@@ -6020,15 +6015,15 @@ bypass_checksum_failed_packet:
 								{
 									if (ts->useScreenRes)
 									{
-										I("status:%X, Screen:F:%02d Up, X:%d, Y:%d, N:%d\n",
+										I("status:%X, Screen:F:%02d Up, X:%d, Y:%d\n",
 										finger_pressed, loop_i+1, ts->pre_finger_data[loop_i][0] * ts->widthFactor >> SHIFTBITS,
-										ts->pre_finger_data[loop_i][1] * ts->heightFactor >> SHIFTBITS, Last_EN_NoiseFilter);
+										ts->pre_finger_data[loop_i][1] * ts->heightFactor >> SHIFTBITS);
 									}
 									else
 									{
-										I("status:%X, Raw:F:%02d Up, X:%d, Y:%d, N:%d\n",
+										I("status:%X, Raw:F:%02d Up, X:%d, Y:%d\n",
 										finger_pressed, loop_i+1, ts->pre_finger_data[loop_i][0],
-										ts->pre_finger_data[loop_i][1], Last_EN_NoiseFilter);
+										ts->pre_finger_data[loop_i][1]);
 									}
 								}
 							}
@@ -6077,10 +6072,9 @@ bypass_checksum_failed_packet:
 					for (loop_i = 0; loop_i < ts->nFinger_support && (ts->debug_log_level & BIT(3)) > 0; loop_i++) {
 						if (((ts->pre_finger_mask >> loop_i) & 1) == 1) {
 							if (ts->useScreenRes) {
-								I("status:%X, Screen:F:%02d Up, X:%d, Y:%d, N:%d\n", 0, loop_i+1, ts->pre_finger_data[loop_i][0] * ts->widthFactor >> SHIFTBITS,
-									ts->pre_finger_data[loop_i][1] * ts->heightFactor >> SHIFTBITS, Last_EN_NoiseFilter);
+								I("status:%X, Screen:F:%02d Up, X:%d, Y:%d\n", 0, loop_i+1, ts->pre_finger_data[loop_i][0] * ts->widthFactor >> SHIFTBITS,ts->pre_finger_data[loop_i][1] * ts->heightFactor >> SHIFTBITS);
 							} else {
-								I("status:%X, Raw:F:%02d Up, X:%d, Y:%d, N:%d\n",0, loop_i+1, ts->pre_finger_data[loop_i][0],ts->pre_finger_data[loop_i][1], Last_EN_NoiseFilter);
+								I("status:%X, Raw:F:%02d Up, X:%d, Y:%d\n",0, loop_i+1, ts->pre_finger_data[loop_i][0],ts->pre_finger_data[loop_i][1]);
 							}
 						}
 					}
@@ -6143,7 +6137,6 @@ bypass_checksum_failed_packet:
 			}
 		}
 		tpd_key_old = tpd_key;
-		Last_EN_NoiseFilter = EN_NoiseFilter;
 
 		
 			#ifdef ENABLE_CHIP_STATUS_MONITOR
@@ -6993,8 +6986,6 @@ static int himax8528_suspend(struct i2c_client *client, pm_message_t mesg)
 
 	I("%s: enter\n", __func__);
 
-	himax_int_enable(0);
-
 	
 	buf[0] = HX_CMD_TSSOFF;
 	ret = i2c_himax_master_write(client, buf, 1, HIMAX_I2C_RETRY_TIMES);
@@ -7019,7 +7010,7 @@ static int himax8528_suspend(struct i2c_client *client, pm_message_t mesg)
 	{
 		E("[himax] %s: I2C access failed addr = 0x%x\n", __func__, client->addr);
 	}
-
+	himax_int_enable(0);
 	
 	#ifdef ENABLE_CHIP_STATUS_MONITOR
 	ts->running_status = 1;
