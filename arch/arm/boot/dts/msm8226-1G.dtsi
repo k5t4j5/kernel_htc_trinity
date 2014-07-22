@@ -36,18 +36,12 @@
 			reg = <0 0x2a00000>;
 			label = "adsp_mem";
 		};
-
-		qsecom_mem: qsecom_region {
-			linux,contiguous-region;
-			reg = <0 0xd00000>;
-			label = "qsecom_mem";
-		};
 	};
 
 	soc: soc { };
 };
 
-/include/ "msm8226-ion.dtsi"
+/include/ "msm8226-ion-1G.dtsi"
 /include/ "msm8226-camera.dtsi"
 /include/ "msm-gdsc.dtsi"
 /include/ "msm8226-iommu.dtsi"
@@ -1373,7 +1367,6 @@
 		interrupts = <0 207 0>;
 		qcom,bam-pipe-pair = <2>;
 		qcom,ce-hw-instance = <0>;
-		qcom,ce-device = <0>;
 		qcom,ce-hw-shared;
 		qcom,msm-bus,name = "qcrypto-noc";
 		qcom,msm-bus,num-cases = <2>;
@@ -1392,7 +1385,6 @@
 		interrupts = <0 207 0>;
 		qcom,bam-pipe-pair = <1>;
 		qcom,ce-hw-instance = <0>;
-		qcom,ce-device = <0>;
 		qcom,ce-hw-shared;
 		qcom,msm-bus,name = "qcedev-noc";
 		qcom,msm-bus,num-cases = <2>;
