@@ -14,10 +14,10 @@
 #include <linux/compiler.h>
 #include <linux/rbtree.h>
 
-static const int read_expire = HZ / 2;  
-static const int write_expire = 5 * HZ; 
-static const int writes_starved = 2;    
-static const int fifo_batch = 16;       
+static const int read_expire = HZ / 2;
+static const int write_expire = 5 * HZ;
+static const int writes_starved = 2; 
+static const int fifo_batch = 16;
 
 struct deadline_data {
 
@@ -155,7 +155,8 @@ deadline_move_to_dispatch(struct deadline_data *dd, struct request *rq)
 }
 
 static void
-deadline_move_request(struct deadline_data *dd, struct request *rq)
+deadline_move_request(struct deadline_data 
+*dd, struct request *rq)
 {
 	const int data_dir = rq_data_dir(rq);
 
