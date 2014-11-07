@@ -1461,7 +1461,7 @@ int create_pkt_cmd_session_set_property(
 		pr_err("MARK LTR\n");
 		break;
 	}
-	case HAL_PARAM_VENC_HIER_P_NUM_FRAMES:
+	case HAL_CONFIG_VENC_HIER_P_NUM_FRAMES:
 	{
 		pkt->rg_property_data[0] =
 			HFI_PROPERTY_PARAM_VENC_HIER_P_NUM_ENH_LAYER;
