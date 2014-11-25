@@ -324,7 +324,6 @@ static long tfa9887l_ioctl(struct file *file, unsigned int cmd,
 	char *addr;
 	void __user *argp = (void __user *)arg;
 	struct amp_ctrl ampctrl;
-	char *buf;
 
 	switch (cmd) {
 	case TPA9887_WRITE_CONFIG:
@@ -338,19 +337,7 @@ static long tfa9887l_ioctl(struct file *file, unsigned int cmd,
 		len = reg_value[0];
 		addr = (char *)reg_value[1];
 
-		buf = kmalloc(len, GFP_KERNEL);
-		if (!buf) {
-			pr_err("%s len %u NO mem\n", __func__, len);
-			return -ENOMEM;
-		}
-		if (copy_from_user(buf, addr, len)) {
-			kfree(buf);
-			pr_err("%s addr %x error\n", __func__, (unsigned int)addr);
-			return -EFAULT;
-		}
-
-		tfa9887_i2c_write(buf+1, len -1);
-		kfree(buf);
+		tfa9887_i2c_write(addr+1, len -1);
 
 		break;
 	case TPA9887_READ_CONFIG:
@@ -363,20 +350,7 @@ static long tfa9887l_ioctl(struct file *file, unsigned int cmd,
 
 		len = reg_value[0];
 		addr = (char *)reg_value[1];
-
-		buf = kmalloc(len, GFP_KERNEL);
-		if (!buf) {
-			pr_err("%s len %u NO mem\n", __func__, len);
-			return -ENOMEM;
-		}
-
-		tfa9887_i2c_read(buf, len);
-		if (copy_to_user(addr, buf, len)) {
-			kfree(buf);
-			pr_err("%s addr %x NO mem\n", __func__, (unsigned int)addr);
-			return -EFAULT;
-		}
-		kfree(buf);
+		tfa9887_i2c_read(addr, len);
 
 		rc = copy_to_user(argp, reg_value, sizeof(reg_value));
 		if (rc < 0) {
